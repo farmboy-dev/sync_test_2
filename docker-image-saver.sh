@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# 도움말 함수
+# Help function
 show_help() {
     echo "Usage: $0 <IMAGE_LIST_FILE> <SAVE_DIR>"
     echo "Download Docker images listed in IMAGE_LIST_FILE, save them as tar files, and remove the images."
@@ -11,13 +11,13 @@ show_help() {
     echo "  -h, --help       Show this help message and exit."
 }
 
-# 파라미터가 없을 때 도움말 출력
+# Show help if no parameters are provided
 if [ $# -eq 0 ]; then
     show_help
     exit 1
 fi
 
-# 도움말 옵션 처리
+# Handle help option
 case "$1" in
     -h|--help)
         show_help
@@ -25,39 +25,39 @@ case "$1" in
         ;;
 esac
 
-# 이미지 목록 파일을 저장할 경로 및 파일명
+# Set the path and filename for the image list
 IMAGE_LIST_FILE="$1"
 
-# 이미지를 저장할 디렉토리
+# Set the directory to save images
 SAVE_DIR="$2"
 
-# 필수 인자 확인
+# Check for required arguments
 if [ -z "$IMAGE_LIST_FILE" ] || [ -z "$SAVE_DIR" ]; then
     echo "Error: Missing required arguments."
     show_help
     exit 1
 fi
 
-# 이미지 목록 파일이 존재하는지 확인
+# Check if the image list file exists
 if [ ! -f "$IMAGE_LIST_FILE" ]; then
     echo "Error: IMAGE_LIST_FILE not found."
     exit 1
 fi
 
-# 저장 디렉토리 생성
+# Create the save directory
 mkdir -p "$SAVE_DIR"
 
-# 이미지 목록 파일을 읽어서 이미지 다운로드, 저장, 삭제
+# Read the image list file and download, save, and remove each image
 while IFS= read -r image; do
     echo "Processing image: $image"
     
-    # 이미지 다운로드
+    # Download the image
     docker pull "$image"
     
-    # 이미지를 tar로 저장
+    # Save the image as a tar file
     docker save -o "$SAVE_DIR/$image.tar" "$image"
     
-    # 이미지 삭제
+    # Remove the image
     docker rmi "$image"
     
     echo "Image $image has been saved and removed."
@@ -65,3 +65,4 @@ while IFS= read -r image; do
 done < "$IMAGE_LIST_FILE"
 
 echo "Process completed. Images are saved in $SAVE_DIR directory."
+
