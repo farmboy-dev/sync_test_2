@@ -11,6 +11,11 @@ show_help() {
     echo "  -h, --help       Show this help message and exit."
 }
 
+# Function to sanitize a string for use as a filename
+sanitize_filename() {
+    echo "$1" | tr -cd '[:alnum:]._-'
+}
+
 # Show help if no parameters are provided
 if [ $# -eq 0 ]; then
     show_help
@@ -53,13 +58,16 @@ for image in $IMAGES; do
     # Download the image
     docker pull "$image"
     
+    # Sanitize the image name to create a valid filename
+    sanitized_name=$(sanitize_filename "$image")
+    
     # Save the image as a tar file
-    docker save -o "$SAVE_DIR/$image.tar" "$image"
+    docker save -o "$SAVE_DIR/$sanitized_name.tar" "$image"
     
     # Remove the image
     docker rmi "$image"
     
-    echo "Image $image has been saved and removed."
+    echo "Image $image has been saved and removed as $sanitized_name.tar."
 done
 
 echo "Process completed. Images are saved in $SAVE_DIR directory."
