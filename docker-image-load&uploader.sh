@@ -7,6 +7,9 @@ process_tar_file() {
 
     # Extract image name from tar file
     local image_name=$(docker inspect --format="{{.RepoTags}}" "$(docker load -i "$tar_file" | awk '{print $NF}' | sed 's/:$//')")
+    
+    # Remove square brackets
+    image_name=$(echo "$image_name" | tr -d '[]')
 
     # Remove 'XXX.io/' from the beginning of the image name
     image_name=$(echo "$image_name" | sed -E 's/^[[:alnum:]]+\.io\///')
