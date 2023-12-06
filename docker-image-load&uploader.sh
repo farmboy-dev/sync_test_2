@@ -1,5 +1,25 @@
 #!/bin/bash
 
+# Function to process a single tar file
+process_tar_file() {
+    local tar_file="$1"
+    local registry="$2"
+
+    # Extract image name from tar file
+    local image_name=$(docker inspect --format="{{.RepoTags}}" "$(docker load -i "$tar_file" | awk '{print $NF}' | sed 's/:$//')")
+
+    # Remove 'XXX.io/' from the beginning of the image name
+    image_name=$(echo "$image_name" | sed -E 's/^[[:alnum:]]+\.io\///')
+
+    # Tag the image with the Docker registry address
+    docker tag "$image_name" "$registry/$image_name"
+
+    # Push the tagged image to the registry
+    docker push "$registry/$image_name"
+
+    echo "Image $image_name has been tagged and pushed to $registry."
+}
+
 # Help function
 show_help() {
     echo "Usage: $0 TAR_DIR_OR_FILE DOCKER_REGISTRY"
@@ -46,32 +66,8 @@ if [ -d "$1" ]; then
     for tar_file in "$1"/*.tar; do
         process_tar_file "$tar_file" "$DOCKER_REGISTRY"
     done
-elif [ -f "$1" ]; then
-    process_tar_file "$1" "$DOCKER_REGISTRY"
 else
-    echo "Error: Invalid TAR_DIR_OR_FILE provided."
-    show_help
-    exit 1
+    process_tar_file "$1" "$DOCKER_REGISTRY"
 fi
 
 echo "Process completed."
-
-# Function to process a single tar file
-process_tar_file() {
-    local tar_file="$1"
-    local registry="$2"
-
-    # Extract image name from tar file
-    local image_name=$(docker inspect --format="{{.RepoTags}}" "$(docker load -i "$tar_file" | awk '{print $NF}' | sed 's/:$//')")
-
-    # Remove 'XXX.io/' from the beginning of the image name
-    image_name=$(echo "$image_name" | sed -E 's/^[[:alnum:]]+\.io\///')
-
-    # Tag the image with the Docker registry address
-    docker tag "$image_name" "$registry/$image_name"
-
-    # Push the tagged image to the registry
-    docker push "$registry/$image_name"
-
-    echo "Image $image_name has been tagged and pushed to $registry."
-}
