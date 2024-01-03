@@ -34,3 +34,5 @@ A commonly used exporter for collecting system-level metrics from hosts, includi
 Pushgateway:
 
 Allows short-lived jobs or batch processes to push metrics to Prometheus. This is useful for scenarios where the usual pull-based model isn't suitable.
+
+curl -XPOST -d '[{"labels":{"alertname":"TestAlert"},"annotations":{"summary":"Test notification"}}]' http://alertmanager-url:port/api/v1/alerts
