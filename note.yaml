@@ -47,3 +47,50 @@ kubectl delete crd prometheusrules.monitoring.coreos.com
 kubectl delete crd scrapeconfigs.monitoring.coreos.com
 kubectl delete crd servicemonitors.monitoring.coreos.com
 kubectl delete crd thanosrulers.monitoring.coreos.com
+
+cat <<EOF > objstore.yaml
+type: s3
+config:
+  bucket: thanos
+  endpoint: thanos-minio:9000
+  access_key: admin
+  secret_key: password
+  insecure: true
+EOF
+
+
+kubectl create namespace monitoring
+kubectl create secret generic objstore-secret \
+  --from-file=objstore.yml \
+  --namespace monitoring
+
+cat <<EOF > value-override-thanos-sidecar.yaml
+prometheus:
+  prometheusSpec:
+    thanos:
+      objectStorageConfig:
+        key: objstore.yml
+        name: objstore-secret
+EOF
+
+
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo update
+
+helm install thanos bitnami/thanos \
+  --namespace monitoring \
+  --set query.dnsDiscovery.enabled=true \
+  --set "query.dnsDiscovery.sidecarsService=kube-prometheus-stack-thanos-discovery" \
+  --set query.dnsDiscovery.sidecarsNamespace=monitoring \
+  --set minio.enabled=true \
+  --set minio.auth.rootPassword=password
+
+helm install prometheus-operator-crds prometheus-community/kube-prometheus-stack \
+  --namespace monitoring
+
+helm install kube-prometheus-stack prometheus-community/kube-prometheus-stack \
+  --values value-override-thanos-sidecar.yaml \
+  --namespace monitoring \
+  --set prometheus.thanosService.enabled=true \
+  --set "prometheus.thanosService.clusterIP= "
