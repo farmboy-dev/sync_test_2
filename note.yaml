@@ -36,3 +36,14 @@ Pushgateway:
 Allows short-lived jobs or batch processes to push metrics to Prometheus. This is useful for scenarios where the usual pull-based model isn't suitable.
 
 curl -XPOST -d '[{"labels":{"alertname":"TestAlert"},"annotations":{"summary":"Test notification"}}]' http://alertmanager-url:port/api/v1/alerts
+
+kubectl delete crd alertmanagerconfigs.monitoring.coreos.com
+kubectl delete crd alertmanagers.monitoring.coreos.com
+kubectl delete crd podmonitors.monitoring.coreos.com
+kubectl delete crd probes.monitoring.coreos.com
+kubectl delete crd prometheusagents.monitoring.coreos.com
+kubectl delete crd prometheuses.monitoring.coreos.com
+kubectl delete crd prometheusrules.monitoring.coreos.com
+kubectl delete crd scrapeconfigs.monitoring.coreos.com
+kubectl delete crd servicemonitors.monitoring.coreos.com
+kubectl delete crd thanosrulers.monitoring.coreos.com
