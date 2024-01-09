@@ -1,0 +1,39 @@
+<!-- welcome.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Welcome to Kubernetes!</title>
+</head>
+<body>
+    <h1>Hello from Nginx running on Kubernetes!</h1>
+    <p>This is the welcome page served by Node: <strong id="node-name"></strong></p>
+
+    <script>
+        // JavaScript to dynamically insert Node name into the page
+        document.getElementById('node-name').innerText = process.env.NODE_NAME || 'unknown';
+    </script>
+</body>
+</html>
+
+kubectl create configmap nginx-welcome-page --from-file=welcome.html
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-pod
+spec:
+  containers:
+  - name: nginx-container
+    image: nginx
+    volumeMounts:
+    - name: nginx-welcome-volume
+      mountPath: /usr/share/nginx/html
+  env:
+  - name: NODE_NAME
+    valueFrom:
+      fieldRef:
+        fieldPath: spec.nodeName
+  volumes:
+  - name: nginx-welcome-volume
+    configMap:
+      name: nginx-welcome-page
