@@ -37,3 +37,14 @@ spec:
   - name: nginx-welcome-volume
     configMap:
       name: nginx-welcome-page
+
+
+      affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: kubernetes.io/hostname
+            operator: NotIn
+            values:
+            - ks-worker-04
