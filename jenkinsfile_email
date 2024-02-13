@@ -1,0 +1,19 @@
+script {
+                // Surefire에서 생성된 emailable 보고서 파일 경로
+                def emailableReportContent = readFile('path/to/emailable-report.html')
+                
+                // 이메일 본문에 보고서 내용과 build number 등을 추가
+                emailext body: """
+                        <p>Build Number: ${BUILD_NUMBER}</p>
+                        <p>Build Status: ${currentBuild.result}</p>
+                        <p>Build URL: ${BUILD_URL}</p>
+                        <p>Project Name: ${PROJECT_NAME}</p>
+                        <p>Project URL: ${PROJECT_URL}</p>
+                        <p>Build Duration: ${currentBuild.durationString}</p>
+                        <p>Console Output: ${Jenkins.instance.getItemByFullName(JOB_NAME).getBuildByNumber(BUILD_NUMBER).log}</p>
+                        ${emailableReportContent}
+                    """,
+                    subject: "Your subject here",
+                    to: "recipient@example.com",
+                    mimeType: 'text/html'
+            }
